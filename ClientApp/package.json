@@ -1,11 +1,11 @@
 {
-  "name": "betsson_group",
+  "name": "betsson-group",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "build:ssr": "ng run betsson_group:server:dev",
+    "build:ssr": "ng run betsson-group:server:dev",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"

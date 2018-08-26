@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "betsson_group": {
+    "betsson-group": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -52,18 +52,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "betsson_group:build"
+            "browserTarget": "betsson-group:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "betsson_group:build:production"
+              "browserTarget": "betsson-group:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "betsson_group:build"
+            "browserTarget": "betsson-group:build"
           }
         },
         "test": {
@@ -122,7 +122,7 @@
         }
       }
     },
-    "betsson_group-e2e": {
+    "betsson-group-e2e": {
       "root": "e2e/",
       "projectType": "application",
       "architect": {
@@ -130,7 +130,7 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "betsson_group:serve"
+            "devServerTarget": "betsson-group:serve"
           }
         },
         "lint": {
@@ -145,5 +145,5 @@
       }
     }
   },
-  "defaultProject": "betsson_group"
+  "defaultProject": "betsson-group"
 }
