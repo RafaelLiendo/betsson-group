@@ -11,8 +11,8 @@ namespace BetssonGroup.Models
         public string Key { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public List<Genre> Genres { get; set; } = new List<Genre>();
-        public float Rate { get; set; }
+        public List<MovieGenre> Genres { get; set; } = new List<MovieGenre>();
+        public string Rate { get; set; }
         public string Length { get; set; }
         public string Img { get; set; }
     }
