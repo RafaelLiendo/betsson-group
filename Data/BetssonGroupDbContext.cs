@@ -19,13 +19,14 @@ namespace BetssonGroup.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<MovieGenre>()
-                .HasKey(mg => new { mg.MovieId, mg.GenreId });
+            modelBuilder.Entity<Movie>()
+                .HasMany(m => m.MovieGenres)
+                .WithOne()
+                .HasForeignKey(mg => mg.MovieId)
+                .IsRequired();
 
             modelBuilder.Entity<MovieGenre>()
-                .HasOne(mg => mg.Movie)
-                .WithMany(m => m.MovieGenres)
-                .HasForeignKey(mg => mg.MovieId);
+                .HasKey(mg => new { mg.MovieId, mg.GenreId });
 
             modelBuilder.Entity<MovieGenre>()
                 .HasOne(mg => mg.Genre)

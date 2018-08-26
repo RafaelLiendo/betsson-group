@@ -21,8 +21,9 @@ namespace BetssonGroup.Data
                 new Genre() { Id=6, Key="drama", Name="Drama" },
                 new Genre() { Id=7, Key="history", Name="History" },
                 new Genre() { Id=8, Key="mystery", Name="Mystery" },
-                new Genre() { Id=9, Key="scifi", Name="Sport" },
-                new Genre() { Id=10, Key="thriller", Name="Thriller" },
+                new Genre() { Id=9, Key="scifi", Name="Scifi" },
+                new Genre() { Id=10, Key="sport", Name="Sport" },
+                new Genre() { Id=11, Key="thriller", Name="Thriller" },
             };
 
             context.AddRange(genres);
@@ -127,17 +128,6 @@ namespace BetssonGroup.Data
                     Rate= "7.5",
                     Length= "2hr 11mins",
                     Img= "mission-impossible-rogue-nation.jpg"
-                },
-                new Movie()
-                {
-                    Id= 10,
-                    Key= "the-man-from-uncle",
-                    Name= "The Man from U.N.C.L.E.",
-                    Description= "In the early 1960s, CIA agent Napoleon Solo and KGB operative Illya Kuryakin participate in a joint mission against a mysterious criminal organization, which is working to proliferate nuclear weapons.",
-                    MovieGenres= genres.FindByKey("action", "adventure", "thriller").ToMovieGenre(),
-                    Rate= "7.3",
-                    Length= "1hr 56mins",
-                    Img= "the-man-from-uncle.jpg"
                 },
                 new Movie()
                 {
@@ -292,8 +282,23 @@ namespace BetssonGroup.Data
                     Rate= "6.8",
                     Length= "1hr 59mins",
                     Img= "bad-boys.jpg"
-                }
+                },
+                new Movie()
+                {
+                    Id= 24,
+                    Key= "the-man-from-uncle",
+                    Name= "The Man from U.N.C.L.E.",
+                    Description= "In the early 1960s, CIA agent Napoleon Solo and KGB operative Illya Kuryakin participate in a joint mission against a mysterious criminal organization, which is working to proliferate nuclear weapons.",
+                    MovieGenres= genres.FindByKey("action", "adventure", "thriller").ToMovieGenre(),
+                    Rate= "7.3",
+                    Length= "1hr 56mins",
+                    Img= "the-man-from-uncle.jpg"
+                },
             };
+
+            context.AddRange(movies);
+
+            context.SaveChanges();
         }
 
         private static IEnumerable<Genre> FindByKey(this Genre[] genres, params string[] keys)
