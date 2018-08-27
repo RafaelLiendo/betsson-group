@@ -21,7 +21,7 @@ namespace BetssonGroup.Controllers
         }
         // GET: api/<controller>
         [HttpGet]
-        public IEnumerable<Genre> Get()
+        public IEnumerable<Genre> GetGenres()
         {
             return _db.Genres
                 .ToList();

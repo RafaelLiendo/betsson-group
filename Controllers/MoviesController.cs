@@ -21,7 +21,7 @@ namespace BetssonGroup.Controllers
         }
         // GET: api/<controller>
         [HttpGet]
-        public IEnumerable<Movie> Get()
+        public IEnumerable<Movie> GetMovies()
         {
             return _db.Movies
                 .Include(m => m.MovieGenres)
@@ -31,7 +31,7 @@ namespace BetssonGroup.Controllers
 
         // GET api/<controller>/5
         [HttpGet("{id}")]
-        public Movie Get(int id)
+        public Movie GetMovieById(int id)
         {
             return _db.Movies
                 .Include(m => m.MovieGenres)

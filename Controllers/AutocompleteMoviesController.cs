@@ -22,10 +22,10 @@ namespace BetssonGroup.Controllers
 
         // GET api/<controller>/deadpool
         [HttpGet("{search}")]
-        public IEnumerable<AutocompleteMovie> Get(string search)
+        public IEnumerable<AutocompleteMovie> GetAutocomplete(string search)
         {
             var normalizedSearch = search.ToLower();
-            return _db.Movies                
+            return _db.Movies
                 .Where(m =>
                     m.Name.ToLower().Contains(normalizedSearch) ||
                     m.Description.ToLower().Contains(normalizedSearch))
