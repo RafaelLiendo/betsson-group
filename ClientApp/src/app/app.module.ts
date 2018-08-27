@@ -11,6 +11,8 @@ import { LayoutModule } from '@angular/cdk/layout';
 import { MatToolbarModule, MatButtonModule, MatSidenavModule, MatIconModule, MatListModule } from '@angular/material';
 import { StoreModule } from '@ngrx/store';
 import { reducers, metaReducers } from './reducers';
+import { EffectsModule } from '@ngrx/effects';
+import { AppEffects } from './app.effects';
 
 @NgModule({
   declarations: [AppComponent, ShellComponent],
@@ -26,7 +28,8 @@ import { reducers, metaReducers } from './reducers';
     MatSidenavModule,
     MatIconModule,
     MatListModule,
-    StoreModule.forRoot(reducers, { metaReducers })
+    StoreModule.forRoot(reducers, { metaReducers }),
+    EffectsModule.forRoot([AppEffects])
   ],
   providers: [],
   bootstrap: [AppComponent]
