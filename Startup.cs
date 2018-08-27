@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.AspNetCore.Swagger;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Linq;
 
 namespace BetssonGroup
 {
@@ -31,6 +33,18 @@ namespace BetssonGroup
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Info { Title = "BetssonGroup API", Version = "v1" });
+                c.CustomSchemaIds(type => {
+                    var FullNameWithouPlusSign = type
+                        .FullName
+                        .Replace("+", "");
+
+                    var lastName = FullNameWithouPlusSign
+                        .Substring(
+                            FullNameWithouPlusSign.LastIndexOf('.') + 1);
+
+                    return lastName;
+                });
+                c.OperationFilter<ActionNameOperationIdOperationFilter>();
             });
 
             // In production, the Angular files will be served from this directory
@@ -43,18 +57,6 @@ namespace BetssonGroup
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, BetssonGroupDbContext context)
         {
-            SeedData.Populate(context);
-
-            // Enable middleware to serve generated Swagger as a JSON endpoint.
-            app.UseSwagger();
-
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.), 
-            // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-            });
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -68,6 +70,18 @@ namespace BetssonGroup
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
+
+            SeedData.Populate(context);
+
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+            });
 
             app.UseMvc(routes =>
             {
@@ -88,6 +102,19 @@ namespace BetssonGroup
                     spa.UseAngularCliServer(npmScript: "start");
                 }
             });
+        }
+    }
+
+    public class ActionNameOperationIdOperationFilter : IOperationFilter
+    {
+        public void Apply(Operation operation, OperationFilterContext context)
+        {
+            var actionDescriptor = context.ApiDescription.ActionDescriptor as Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor;
+            var controller = actionDescriptor?.ControllerName;
+            var action = actionDescriptor?.ActionName.Replace("Async", "");
+
+            operation.OperationId = $"{ controller }_{ action }";
+
         }
     }
 }
