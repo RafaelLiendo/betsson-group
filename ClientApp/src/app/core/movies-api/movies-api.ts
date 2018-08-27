@@ -11,36 +11,24 @@ import { Observable, from as _observableFrom, throwError as _observableThrow, of
 import { Injectable, Inject, Optional, InjectionToken } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse, HttpResponseBase } from '@angular/common/http';
 
-export const BASE_API_URL = new InjectionToken<string>('BASE_API_URL');
+export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
 
-export interface IService {
+export interface IAutocompleteMoviesService {
     /**
      * @return Success
      */
-    apiAutocompleteMoviesBySearchGet(search: string): Observable<AutocompleteMovie[]>;
-    /**
-     * @return Success
-     */
-    apiGenresGet(): Observable<Genre[]>;
-    /**
-     * @return Success
-     */
-    apiMoviesGet(): Observable<Movie[]>;
-    /**
-     * @return Success
-     */
-    apiMoviesByIdGet(id: number): Observable<Movie>;
+    getAutocomplete(search: string): Observable<AutocompleteMoviesControllerAutocompleteMovie[]>;
 }
 
 @Injectable({
     providedIn: 'root'
 })
-export class Service implements IService {
+export class AutocompleteMoviesService implements IAutocompleteMoviesService {
     private http: HttpClient;
     private baseUrl: string;
-    protected jsonParseReviver: (key: string, value: any) => any = undefined;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
 
-    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(BASE_API_URL) baseUrl?: string) {
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
         this.http = http;
         this.baseUrl = baseUrl ? baseUrl : "";
     }
@@ -48,52 +36,47 @@ export class Service implements IService {
     /**
      * @return Success
      */
-    apiAutocompleteMoviesBySearchGet(search: string): Observable<AutocompleteMovie[]> {
+    getAutocomplete(search: string): Observable<AutocompleteMoviesControllerAutocompleteMovie[]> {
         let url_ = this.baseUrl + "/api/AutocompleteMovies/{search}";
         if (search === undefined || search === null)
             throw new Error("The parameter 'search' must be defined.");
-        url_ = url_.replace("{search}", encodeURIComponent("" + search)); 
+        url_ = url_.replace("{search}", encodeURIComponent("" + search));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Content-Type": "application/json", 
+                "Content-Type": "application/json",
                 "Accept": "application/json"
             })
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processApiAutocompleteMoviesBySearchGet(response_);
+            return this.processGetAutocomplete(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processApiAutocompleteMoviesBySearchGet(<any>response_);
+                    return this.processGetAutocomplete(<any>response_);
                 } catch (e) {
-                    return <Observable<AutocompleteMovie[]>><any>_observableThrow(e);
+                    return <Observable<AutocompleteMoviesControllerAutocompleteMovie[]>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<AutocompleteMovie[]>><any>_observableThrow(response_);
+                return <Observable<AutocompleteMoviesControllerAutocompleteMovie[]>><any>_observableThrow(response_);
         }));
     }
 
-    protected processApiAutocompleteMoviesBySearchGet(response: HttpResponseBase): Observable<AutocompleteMovie[]> {
+    protected processGetAutocomplete(response: HttpResponseBase): Observable<AutocompleteMoviesControllerAutocompleteMovie[]> {
         const status = response.status;
-        const responseBlob = 
-            response instanceof HttpResponse ? response.body : 
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (resultData200 && resultData200.constructor === Array) {
-                result200 = [];
-                for (let item of resultData200)
-                    result200.push(AutocompleteMovie.fromJS(item));
-            }
+            result200 = _responseText === "" ? null : <AutocompleteMoviesControllerAutocompleteMovie[]>JSON.parse(_responseText, this.jsonParseReviver);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -101,13 +84,34 @@ export class Service implements IService {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<AutocompleteMovie[]>(<any>null);
+        return _observableOf<AutocompleteMoviesControllerAutocompleteMovie[]>(<any>null);
+    }
+}
+
+export interface IGenresService {
+    /**
+     * @return Success
+     */
+    getAll(): Observable<Genre[]>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class GenresService implements IGenresService {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ? baseUrl : "";
     }
 
     /**
      * @return Success
      */
-    apiGenresGet(): Observable<Genre[]> {
+    getAll(): Observable<Genre[]> {
         let url_ = this.baseUrl + "/api/Genres";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -115,17 +119,17 @@ export class Service implements IService {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Content-Type": "application/json", 
+                "Content-Type": "application/json",
                 "Accept": "application/json"
             })
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processApiGenresGet(response_);
+            return this.processGetAll(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processApiGenresGet(<any>response_);
+                    return this.processGetAll(<any>response_);
                 } catch (e) {
                     return <Observable<Genre[]>><any>_observableThrow(e);
                 }
@@ -134,22 +138,17 @@ export class Service implements IService {
         }));
     }
 
-    protected processApiGenresGet(response: HttpResponseBase): Observable<Genre[]> {
+    protected processGetAll(response: HttpResponseBase): Observable<Genre[]> {
         const status = response.status;
-        const responseBlob = 
-            response instanceof HttpResponse ? response.body : 
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (resultData200 && resultData200.constructor === Array) {
-                result200 = [];
-                for (let item of resultData200)
-                    result200.push(Genre.fromJS(item));
-            }
+            result200 = _responseText === "" ? null : <Genre[]>JSON.parse(_responseText, this.jsonParseReviver);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -159,11 +158,36 @@ export class Service implements IService {
         }
         return _observableOf<Genre[]>(<any>null);
     }
+}
+
+export interface IMoviesService {
+    /**
+     * @return Success
+     */
+    getAll(): Observable<Movie[]>;
+    /**
+     * @return Success
+     */
+    getMovieById(id: number): Observable<Movie>;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class MoviesService implements IMoviesService {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ? baseUrl : "";
+    }
 
     /**
      * @return Success
      */
-    apiMoviesGet(): Observable<Movie[]> {
+    getAll(): Observable<Movie[]> {
         let url_ = this.baseUrl + "/api/Movies";
         url_ = url_.replace(/[?&]$/, "");
 
@@ -171,17 +195,17 @@ export class Service implements IService {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Content-Type": "application/json", 
+                "Content-Type": "application/json",
                 "Accept": "application/json"
             })
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processApiMoviesGet(response_);
+            return this.processGetAll(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processApiMoviesGet(<any>response_);
+                    return this.processGetAll(<any>response_);
                 } catch (e) {
                     return <Observable<Movie[]>><any>_observableThrow(e);
                 }
@@ -190,22 +214,17 @@ export class Service implements IService {
         }));
     }
 
-    protected processApiMoviesGet(response: HttpResponseBase): Observable<Movie[]> {
+    protected processGetAll(response: HttpResponseBase): Observable<Movie[]> {
         const status = response.status;
-        const responseBlob = 
-            response instanceof HttpResponse ? response.body : 
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (resultData200 && resultData200.constructor === Array) {
-                result200 = [];
-                for (let item of resultData200)
-                    result200.push(Movie.fromJS(item));
-            }
+            result200 = _responseText === "" ? null : <Movie[]>JSON.parse(_responseText, this.jsonParseReviver);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -219,28 +238,28 @@ export class Service implements IService {
     /**
      * @return Success
      */
-    apiMoviesByIdGet(id: number): Observable<Movie> {
+    getMovieById(id: number): Observable<Movie> {
         let url_ = this.baseUrl + "/api/Movies/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
-        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
-                "Content-Type": "application/json", 
+                "Content-Type": "application/json",
                 "Accept": "application/json"
             })
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processApiMoviesByIdGet(response_);
+            return this.processGetMovieById(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processApiMoviesByIdGet(<any>response_);
+                    return this.processGetMovieById(<any>response_);
                 } catch (e) {
                     return <Observable<Movie>><any>_observableThrow(e);
                 }
@@ -249,18 +268,17 @@ export class Service implements IService {
         }));
     }
 
-    protected processApiMoviesByIdGet(response: HttpResponseBase): Observable<Movie> {
+    protected processGetMovieById(response: HttpResponseBase): Observable<Movie> {
         const status = response.status;
-        const responseBlob = 
-            response instanceof HttpResponse ? response.body : 
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 ? Movie.fromJS(resultData200) : new Movie();
+            result200 = _responseText === "" ? null : <Movie>JSON.parse(_responseText, this.jsonParseReviver);
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -272,212 +290,40 @@ export class Service implements IService {
     }
 }
 
-export class AutocompleteMovie implements IAutocompleteMovie {
-    id?: number;
-    name?: string;
-
-    constructor(data?: IAutocompleteMovie) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(data?: any) {
-        if (data) {
-            this.id = data["id"];
-            this.name = data["name"];
-        }
-    }
-
-    static fromJS(data: any): AutocompleteMovie {
-        data = typeof data === 'object' ? data : {};
-        let result = new AutocompleteMovie();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["name"] = this.name;
-        return data; 
-    }
+export interface AutocompleteMoviesControllerAutocompleteMovie {
+    id?: number | undefined;
+    name?: string | undefined;
 }
 
-export interface IAutocompleteMovie {
-    id?: number;
-    name?: string;
+export interface Genre {
+    id?: number | undefined;
+    key?: string | undefined;
+    name?: string | undefined;
 }
 
-export class Genre implements IGenre {
-    id?: number;
-    key?: string;
-    name?: string;
-
-    constructor(data?: IGenre) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(data?: any) {
-        if (data) {
-            this.id = data["id"];
-            this.key = data["key"];
-            this.name = data["name"];
-        }
-    }
-
-    static fromJS(data: any): Genre {
-        data = typeof data === 'object' ? data : {};
-        let result = new Genre();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["key"] = this.key;
-        data["name"] = this.name;
-        return data; 
-    }
+export interface Movie {
+    id?: number | undefined;
+    key?: string | undefined;
+    name?: string | undefined;
+    description?: string | undefined;
+    movieGenres?: MovieGenre[] | undefined;
+    rate?: string | undefined;
+    length?: string | undefined;
+    img?: string | undefined;
 }
 
-export interface IGenre {
-    id?: number;
-    key?: string;
-    name?: string;
-}
-
-export class Movie implements IMovie {
-    id?: number;
-    key?: string;
-    name?: string;
-    description?: string;
-    movieGenres?: MovieGenre[];
-    rate?: string;
-    length?: string;
-    img?: string;
-
-    constructor(data?: IMovie) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(data?: any) {
-        if (data) {
-            this.id = data["id"];
-            this.key = data["key"];
-            this.name = data["name"];
-            this.description = data["description"];
-            if (data["movieGenres"] && data["movieGenres"].constructor === Array) {
-                this.movieGenres = [];
-                for (let item of data["movieGenres"])
-                    this.movieGenres.push(MovieGenre.fromJS(item));
-            }
-            this.rate = data["rate"];
-            this.length = data["length"];
-            this.img = data["img"];
-        }
-    }
-
-    static fromJS(data: any): Movie {
-        data = typeof data === 'object' ? data : {};
-        let result = new Movie();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["id"] = this.id;
-        data["key"] = this.key;
-        data["name"] = this.name;
-        data["description"] = this.description;
-        if (this.movieGenres && this.movieGenres.constructor === Array) {
-            data["movieGenres"] = [];
-            for (let item of this.movieGenres)
-                data["movieGenres"].push(item.toJSON());
-        }
-        data["rate"] = this.rate;
-        data["length"] = this.length;
-        data["img"] = this.img;
-        return data; 
-    }
-}
-
-export interface IMovie {
-    id?: number;
-    key?: string;
-    name?: string;
-    description?: string;
-    movieGenres?: MovieGenre[];
-    rate?: string;
-    length?: string;
-    img?: string;
-}
-
-export class MovieGenre implements IMovieGenre {
-    movieId?: number;
-    genreId?: number;
-    genre?: Genre;
-
-    constructor(data?: IMovieGenre) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(data?: any) {
-        if (data) {
-            this.movieId = data["movieId"];
-            this.genreId = data["genreId"];
-            this.genre = data["genre"] ? Genre.fromJS(data["genre"]) : <any>undefined;
-        }
-    }
-
-    static fromJS(data: any): MovieGenre {
-        data = typeof data === 'object' ? data : {};
-        let result = new MovieGenre();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["movieId"] = this.movieId;
-        data["genreId"] = this.genreId;
-        data["genre"] = this.genre ? this.genre.toJSON() : <any>undefined;
-        return data; 
-    }
-}
-
-export interface IMovieGenre {
-    movieId?: number;
-    genreId?: number;
-    genre?: Genre;
+export interface MovieGenre {
+    movieId?: number | undefined;
+    genreId?: number | undefined;
+    genre?: Genre | undefined;
 }
 
 export class SwaggerException extends Error {
     message: string;
-    status: number; 
-    response: string; 
+    status: number;
+    response: string;
     headers: { [key: string]: any; };
-    result: any; 
+    result: any;
 
     constructor(message: string, status: number, response: string, headers: { [key: string]: any; }, result: any) {
         super();
@@ -509,12 +355,12 @@ function blobToText(blob: any): Observable<string> {
             observer.next("");
             observer.complete();
         } else {
-            let reader = new FileReader(); 
-            reader.onload = function() { 
+            let reader = new FileReader();
+            reader.onload = function() {
                 observer.next(this.result);
                 observer.complete();
             }
-            reader.readAsText(blob); 
+            reader.readAsText(blob);
         }
     });
 }

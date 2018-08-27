@@ -1,7 +1,7 @@
 ﻿{
   "swaggerGenerator": {
     "fromSwagger": {
-      "url": "http://localhost:50816/swagger/v1/swagger.json",
+      "url": "https://localhost:5001/swagger/v1/swagger.json",
       "output": null
     }
   },
@@ -10,7 +10,7 @@
       "className": "{controller}Service",
       "moduleName": "",
       "namespace": "",
-      "typeScriptVersion": 1.8,
+      "typeScriptVersion": 2.7,
       "template": "Angular",
       "promiseType": "Promise",
       "httpClass": "HttpClient",
@@ -24,14 +24,13 @@
       "wrapDtoExceptions": false,
       "wrapResponses": false,
       "generateResponseClasses": true,
-      "responseClass": "SwaggerResponse",
       "useTransformOptionsMethod": false,
       "useTransformResultMethod": false,
       "generateDtoTypes": true,
       "operationGenerationMode": "MultipleClientsFromOperationId",
       "markOptionalProperties": true,
       "generateCloneMethod": false,
-      "typeStyle": "Class",
+      "typeStyle": "Interface",
       "generateDefaultValues": true,
       "excludedTypeNames": [],
       "handleReferences": false,
@@ -39,7 +38,7 @@
       "convertConstructorInterfaceData": false,
       "importRequiredTypes": true,
       "useGetBaseUrlMethod": false,
-      "baseUrlTokenName": "BASE_API_URL",
+      "baseUrlTokenName": "API_BASE_URL",
       "output": "./movies-api.ts"
     }
   }
